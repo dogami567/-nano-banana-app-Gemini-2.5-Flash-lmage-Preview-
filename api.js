@@ -221,6 +221,9 @@ async function generateImageWithGemini({
         
         const result = await response.json();
         
+        // 添加调试信息：记录完整的API响应结构
+        console.log('API响应结构:', JSON.stringify(result, null, 2));
+        
         // 更新进度：提取图片数据
         if (onProgress) onProgress(80, '提取生成的图片...');
         
@@ -239,10 +242,15 @@ async function generateImageWithGemini({
             }
             
             for (const part of candidate.content.parts) {
+                // 调试：记录每个part的内容
+                console.log('Part内容:', part);
+                
                 // 收集所有文字内容
-                if (part.text) {
+                if (part.text !== undefined) {
                     allTextContent.push(part.text);
+                    console.log('发现文字内容:', JSON.stringify(part.text));
                 }
+                
                 // 查找图片数据（优先获取第一个找到的图片）
                 if (!imageData && part.inlineData && part.inlineData.data) {
                     imageData = part.inlineData.data;
@@ -260,9 +268,17 @@ async function generateImageWithGemini({
             // 提供详细的错误信息，包含API的实际回复
             if (allTextContent.length > 0) {
                 const fullText = allTextContent.join(' ').trim();
-                throw new Error(`API返回了文字内容而非图片。这可能是因为:\n1. 提示词需要明确要求生成图片\n2. 输入图片无法处理\n3. API临时无法生成图片\n\nAPI回复: "${fullText.substring(0, 200)}${fullText.length > 200 ? '...' : ''}"`);
+                
+                // 检查是否是空内容或只包含空白字符
+                if (!fullText || fullText.length === 0) {
+                    throw new Error('API返回了空的文字内容，未生成图片。请尝试:\n1. 确保提示词明确要求生成或编辑图片\n2. 检查输入图片是否清晰有效\n3. 尝试更具体的图片生成指令');
+                }
+                
+                // 显示实际内容，包括特殊字符的可见形式
+                const displayText = fullText.replace(/\s/g, '·').substring(0, 200);
+                throw new Error(`API返回了文字内容而非图片。这可能是因为:\n1. 提示词需要明确要求生成图片\n2. 输入图片无法处理\n3. API临时无法生成图片\n\nAPI回复内容: "${displayText}${fullText.length > 200 ? '...' : ''}"\n(·代表空格/换行符)`);
             }
-            throw new Error('API未生成图片数据，请检查提示词和输入图片');
+            throw new Error('API未生成任何内容，请检查提示词和输入图片');
         }
         
         // 记录混合内容用于调试
