@@ -1,0 +1,57 @@
+{
+  "name": "nano-banana-app",
+  "version": "1.0.0",
+  "description": "基于 Gemini 2.5 Flash Image 的双图合成工具",
+  "main": "electron-main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "node server.js",
+    "electron": "electron .",
+    "electron-dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "dist": "npm run build"
+  },
+  "keywords": ["gemini", "image", "ai", "generator", "electron"],
+  "author": "Claude Code",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "electron": "^22.0.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.claude.nano-banana",
+    "productName": "Nano Banana",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron-main.js",
+      "index.html",
+      "styles.css",
+      "script.js", 
+      "api.js",
+      "utils.js",
+      "CLAUDE.md",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
