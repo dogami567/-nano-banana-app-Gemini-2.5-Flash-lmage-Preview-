@@ -4,9 +4,22 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
 # Distribution files
 dist/
 build/
+*.egg-info/
 
 # OS generated files
 .DS_Store
@@ -35,6 +48,11 @@ pids
 *.pid
 *.seed
 *.pid.lock
+
+# PyInstaller
+*.spec
+build/
+dist/
 
 # Temporary files
 tmp/
