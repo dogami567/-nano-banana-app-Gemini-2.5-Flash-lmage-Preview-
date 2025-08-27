@@ -27,6 +27,9 @@ function fileToBase64(file) {
  * @returns {string} MIME类型
  */
 function getFileMimeType(file) {
+    if (!file) {
+        return 'image/jpeg';
+    }
     return file.type || 'image/jpeg';
 }
 
