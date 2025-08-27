@@ -11,6 +11,7 @@
         <header>
             <h1>🍌 Nano Banana</h1>
             <p>基于 Gemini 2.5 Flash Image 的双图合成工具</p>
+            <small class="paste-hint">💡 支持单图/双图模式 • 可用 Ctrl+V 粘贴图片</small>
         </header>
 
         <main>
@@ -28,6 +29,7 @@
                             <img id="leftImagePreview" class="image-preview" style="display: none;" alt="左图预览">
                         </div>
                         <label class="image-label">左图（图案/纹理）</label>
+                        <button class="clear-btn" id="clearLeftBtn" onclick="clearImage('left')" style="display: none;">🗑️ 清除</button>
                     </div>
 
                     <div class="upload-box" id="rightImageBox">
@@ -41,6 +43,7 @@
                             <img id="rightImagePreview" class="image-preview" style="display: none;" alt="右图预览">
                         </div>
                         <label class="image-label">右图（主体/模特）</label>
+                        <button class="clear-btn" id="clearRightBtn" onclick="clearImage('right')" style="display: none;">🗑️ 清除</button>
                     </div>
                 </div>
             </section>

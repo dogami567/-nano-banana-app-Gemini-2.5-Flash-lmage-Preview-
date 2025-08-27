@@ -36,6 +36,14 @@ header p {
     opacity: 0.9;
 }
 
+.paste-hint {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    font-style: italic;
+}
+
 /* 主要内容区域 */
 main {
     background: white;
@@ -136,6 +144,30 @@ section h3 {
     margin-top: 0.75rem;
     font-weight: 600;
     color: #2c3e50;
+}
+
+/* 清除按钮样式 */
+.clear-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    transition: background 0.3s ease;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.clear-btn:hover {
+    background: #c82333;
+}
+
+.upload-box {
+    position: relative;
 }
 
 /* API配置区域 */

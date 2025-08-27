@@ -99,10 +99,10 @@ async function getAvailableModels(apiKey) {
  * @param {string} params.apiKey - API密钥
  * @param {string} params.model - 模型名称
  * @param {string} params.prompt - 提示词
- * @param {string} params.leftImageBase64 - 左图Base64数据
- * @param {string} params.leftImageMimeType - 左图MIME类型
- * @param {string} params.rightImageBase64 - 右图Base64数据
- * @param {string} params.rightImageMimeType - 右图MIME类型
+ * @param {string} params.leftImageBase64 - 左图Base64数据（可选）
+ * @param {string} params.leftImageMimeType - 左图MIME类型（可选）
+ * @param {string} params.rightImageBase64 - 右图Base64数据（可选）
+ * @param {string} params.rightImageMimeType - 右图MIME类型（可选）
  * @param {Function} onProgress - 进度回调函数
  * @returns {Promise<string>} 生成的图片Base64数据
  */
@@ -125,36 +125,41 @@ async function generateImageWithGemini({
         throw new Error('提示词不能为空');
     }
     
-    if (!leftImageBase64 || !rightImageBase64) {
-        throw new Error('请先上传两张图片');
+    // 检查图片数量，支持单图或双图模式
+    const hasLeftImage = leftImageBase64 && leftImageBase64.length > 0;
+    const hasRightImage = rightImageBase64 && rightImageBase64.length > 0;
+    
+    if (!hasLeftImage && !hasRightImage) {
+        throw new Error('请先上传至少一张图片');
     }
     
     // 更新进度：准备请求
     if (onProgress) onProgress(10, '准备API请求...');
     
-    // 构建请求数据
-    const requestBody = {
-        contents: [
-            {
-                parts: [
-                    {
-                        text: prompt
-                    },
-                    {
-                        inline_data: {
-                            mime_type: leftImageMimeType,
-                            data: leftImageBase64
-                        }
-                    },
-                    {
-                        inline_data: {
-                            mime_type: rightImageMimeType,
-                            data: rightImageBase64
-                        }
-                    }
-                ]
+    // 构建请求数据 - 动态添加图片
+    const parts = [{ text: prompt }];
+    
+    // 添加可用的图片
+    if (hasLeftImage) {
+        parts.push({
+            inline_data: {
+                mime_type: leftImageMimeType,
+                data: leftImageBase64
             }
-        ],
+        });
+    }
+    
+    if (hasRightImage) {
+        parts.push({
+            inline_data: {
+                mime_type: rightImageMimeType,
+                data: rightImageBase64
+            }
+        });
+    }
+    
+    const requestBody = {
+        contents: [{ parts }],
         generationConfig: {
             temperature: 0.8,
             topK: 32,

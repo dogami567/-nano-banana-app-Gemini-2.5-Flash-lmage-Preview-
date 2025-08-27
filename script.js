@@ -23,6 +23,8 @@ const DOMElements = {
     rightImagePreview: null,
     leftImageBox: null,
     rightImageBox: null,
+    clearLeftBtn: null,
+    clearRightBtn: null,
     apiKeyInput: null,
     modelSelect: null,
     promptInput: null,
@@ -45,6 +47,8 @@ function initializeApp() {
     DOMElements.rightImagePreview = document.getElementById('rightImagePreview');
     DOMElements.leftImageBox = document.getElementById('leftImageBox');
     DOMElements.rightImageBox = document.getElementById('rightImageBox');
+    DOMElements.clearLeftBtn = document.getElementById('clearLeftBtn');
+    DOMElements.clearRightBtn = document.getElementById('clearRightBtn');
     DOMElements.apiKeyInput = document.getElementById('apiKey');
     DOMElements.modelSelect = document.getElementById('modelSelect');
     DOMElements.promptInput = document.getElementById('promptInput');
@@ -102,6 +106,12 @@ function bindEventListeners() {
         e.preventDefault();
         e.stopPropagation();
     }
+    
+    // 添加键盘粘贴事件监听
+    document.addEventListener('paste', handlePasteEvent);
+    
+    // 添加键盘快捷键说明
+    document.addEventListener('keydown', handleKeyboardShortcuts);
 }
 
 /**
@@ -127,12 +137,14 @@ async function handleImageUpload(event, side) {
             DOMElements.leftImagePreview.src = previewUrl;
             DOMElements.leftImagePreview.style.display = 'block';
             DOMElements.leftImageBox.querySelector('.upload-placeholder').style.display = 'none';
+            DOMElements.clearLeftBtn.style.display = 'block';
         } else {
             AppState.rightImage = base64Data;
             AppState.rightImageFile = file;
             DOMElements.rightImagePreview.src = previewUrl;
             DOMElements.rightImagePreview.style.display = 'block';
             DOMElements.rightImageBox.querySelector('.upload-placeholder').style.display = 'none';
+            DOMElements.clearRightBtn.style.display = 'block';
         }
         
         updateGenerateButtonState();
@@ -277,7 +289,8 @@ async function refreshModels() {
  * 更新生成按钮状态
  */
 function updateGenerateButtonState() {
-    const hasImages = AppState.leftImage && AppState.rightImage;
+    // 支持单图或双图模式
+    const hasImages = AppState.leftImage || AppState.rightImage;
     const hasApiKey = AppState.apiKey && AppState.apiKey.length > 0;
     const hasPrompt = DOMElements.promptInput.value.trim().length > 0;
     const isNotGenerating = !AppState.isGenerating;
@@ -285,6 +298,10 @@ function updateGenerateButtonState() {
     const canGenerate = hasImages && hasApiKey && hasPrompt && isNotGenerating;
     
     DOMElements.generateBtn.disabled = !canGenerate;
+    
+    // 显示当前模式
+    const imageCount = (AppState.leftImage ? 1 : 0) + (AppState.rightImage ? 1 : 0);
+    const modeText = imageCount === 1 ? '单图模式' : imageCount === 2 ? '双图模式' : '';
     
     if (!hasImages) {
         DOMElements.generateBtn.textContent = '🖼️ 请先上传图片';
@@ -295,7 +312,7 @@ function updateGenerateButtonState() {
     } else if (AppState.isGenerating) {
         DOMElements.generateBtn.textContent = '⏳ 生成中...';
     } else {
-        DOMElements.generateBtn.textContent = '🚀 开始生成';
+        DOMElements.generateBtn.textContent = `🚀 开始生成 (${modeText})`;
     }
 }
 
@@ -439,6 +456,8 @@ function resetApp() {
     DOMElements.rightImagePreview.style.display = 'none';
     DOMElements.leftImageBox.querySelector('.upload-placeholder').style.display = 'block';
     DOMElements.rightImageBox.querySelector('.upload-placeholder').style.display = 'block';
+    DOMElements.clearLeftBtn.style.display = 'none';
+    DOMElements.clearRightBtn.style.display = 'none';
     DOMElements.promptInput.value = '';
     DOMElements.progressSection.style.display = 'none';
     DOMElements.resultSection.style.display = 'none';
@@ -450,6 +469,123 @@ function resetApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     showNotification('应用已重置', 'info');
+}
+
+/**
+ * 清除指定位置的图片
+ * @param {string} side - 'left' 或 'right'
+ */
+function clearImage(side) {
+    if (side === 'left') {
+        AppState.leftImage = null;
+        AppState.leftImageFile = null;
+        DOMElements.leftImageInput.value = '';
+        DOMElements.leftImagePreview.style.display = 'none';
+        DOMElements.leftImageBox.querySelector('.upload-placeholder').style.display = 'block';
+        DOMElements.clearLeftBtn.style.display = 'none';
+        showNotification('左图已清除', 'info');
+    } else if (side === 'right') {
+        AppState.rightImage = null;
+        AppState.rightImageFile = null;
+        DOMElements.rightImageInput.value = '';
+        DOMElements.rightImagePreview.style.display = 'none';
+        DOMElements.rightImageBox.querySelector('.upload-placeholder').style.display = 'block';
+        DOMElements.clearRightBtn.style.display = 'none';
+        showNotification('右图已清除', 'info');
+    }
+    
+    updateGenerateButtonState();
+}
+
+/**
+ * 处理键盘粘贴事件
+ * @param {ClipboardEvent} event - 粘贴事件
+ */
+async function handlePasteEvent(event) {
+    // 检查是否在输入框中
+    const activeElement = document.activeElement;
+    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+        return; // 在文本输入框中不处理图片粘贴
+    }
+    
+    const items = event.clipboardData?.items;
+    if (!items) return;
+    
+    // 查找图片项
+    let imageFile = null;
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith('image/')) {
+            imageFile = item.getAsFile();
+            break;
+        }
+    }
+    
+    if (!imageFile) {
+        return;
+    }
+    
+    event.preventDefault();
+    
+    if (!validateImageFile(imageFile)) {
+        return;
+    }
+    
+    // 决定放置位置：按顺序优先放置
+    let targetSide = null;
+    if (!AppState.leftImage) {
+        targetSide = 'left';
+    } else if (!AppState.rightImage) {
+        targetSide = 'right';
+    } else {
+        // 两个位置都有图片，询问用户要替换哪个
+        const replaceLeft = confirm('左图和右图都已有内容，是否替换左图？\n点击"确定"替换左图，点击"取消"替换右图');
+        targetSide = replaceLeft ? 'left' : 'right';
+    }
+    
+    // 模拟文件上传事件
+    const mockEvent = {
+        target: { files: [imageFile] }
+    };
+    
+    await handleImageUpload(mockEvent, targetSide);
+    showNotification(`图片已通过粘贴添加到${targetSide === 'left' ? '左' : '右'}图位置`, 'success');
+}
+
+/**
+ * 处理键盘快捷键
+ * @param {KeyboardEvent} event - 键盘事件
+ */
+function handleKeyboardShortcuts(event) {
+    // Ctrl+V 粘贴提示（已在handlePasteEvent中处理）
+    if (event.ctrlKey && event.key.toLowerCase() === 'v') {
+        // 显示粘贴提示（如果剪贴板中没有图片）
+        setTimeout(() => {
+            navigator.clipboard.read().then(items => {
+                let hasImage = false;
+                items.forEach(item => {
+                    if (item.types.some(type => type.startsWith('image/'))) {
+                        hasImage = true;
+                    }
+                });
+                
+                if (!hasImage) {
+                    showNotification('剪贴板中没有图片，请先复制图片', 'info');
+                }
+            }).catch(() => {
+                // 忽略剪贴板权限错误
+            });
+        }, 100);
+    }
+    
+    // Escape 键重置应用
+    if (event.key === 'Escape' && !AppState.isGenerating) {
+        if (AppState.leftImage || AppState.rightImage || AppState.resultImageData) {
+            if (confirm('确定要重置应用吗？这将清除所有内容。')) {
+                resetApp();
+            }
+        }
+    }
 }
 
 // 页面加载完成后初始化应用
