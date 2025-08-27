@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Banana - Gemini双图合成工具</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍌 Nano Banana</h1>
+            <p>基于 Gemini 2.5 Flash Image 的双图合成工具</p>
+        </header>
+
+        <main>
+            <!-- 图片上传区域 -->
+            <section class="upload-section">
+                <div class="upload-container">
+                    <div class="upload-box" id="leftImageBox">
+                        <div class="upload-area" ondrop="handleDrop(event, 'left')" ondragover="handleDragOver(event)">
+                            <input type="file" id="leftImageInput" accept="image/*" onchange="handleImageUpload(event, 'left')" hidden>
+                            <div class="upload-placeholder">
+                                <span class="upload-icon">📁</span>
+                                <p>拖拽或点击上传左图</p>
+                                <button type="button" onclick="document.getElementById('leftImageInput').click()">选择文件</button>
+                            </div>
+                            <img id="leftImagePreview" class="image-preview" style="display: none;" alt="左图预览">
+                        </div>
+                        <label class="image-label">左图（图案/纹理）</label>
+                    </div>
+
+                    <div class="upload-box" id="rightImageBox">
+                        <div class="upload-area" ondrop="handleDrop(event, 'right')" ondragover="handleDragOver(event)">
+                            <input type="file" id="rightImageInput" accept="image/*" onchange="handleImageUpload(event, 'right')" hidden>
+                            <div class="upload-placeholder">
+                                <span class="upload-icon">📁</span>
+                                <p>拖拽或点击上传右图</p>
+                                <button type="button" onclick="document.getElementById('rightImageInput').click()">选择文件</button>
+                            </div>
+                            <img id="rightImagePreview" class="image-preview" style="display: none;" alt="右图预览">
+                        </div>
+                        <label class="image-label">右图（主体/模特）</label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- API配置区域 -->
+            <section class="config-section">
+                <h3>🔧 API配置</h3>
+                <div class="config-container">
+                    <div class="config-row">
+                        <label for="apiKey">API Key:</label>
+                        <input type="password" id="apiKey" placeholder="输入Gemini API Key" class="config-input">
+                    </div>
+                    
+                    <div class="config-row">
+                        <label for="modelSelect">模型:</label>
+                        <select id="modelSelect" class="config-select">
+                            <option value="gemini-2.5-flash-image-preview">gemini-2.5-flash-image-preview</option>
+                            <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                        </select>
+                        <button id="refreshModelsBtn" class="refresh-btn" onclick="refreshModels()">🔄 刷新</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Prompt输入区域 -->
+            <section class="prompt-section">
+                <h3>✍️ 提示词</h3>
+                <textarea id="promptInput" placeholder="输入合成指令，例如：将左图的图案应用到右图的衣服上，保持人物不变..." 
+                         class="prompt-textarea"></textarea>
+            </section>
+
+            <!-- 生成按钮 -->
+            <section class="generate-section">
+                <button id="generateBtn" class="generate-btn" onclick="generateImage()" disabled>
+                    🚀 开始生成
+                </button>
+            </section>
+
+            <!-- 进度显示区域 -->
+            <section class="progress-section" id="progressSection" style="display: none;">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">准备中...</p>
+                </div>
+            </section>
+
+            <!-- 结果显示区域 -->
+            <section class="result-section" id="resultSection" style="display: none;">
+                <h3>✨ 生成结果</h3>
+                <div class="result-container">
+                    <img id="resultImage" class="result-image" alt="生成结果">
+                    <div class="result-actions">
+                        <button class="action-btn" onclick="saveImage()">💾 保存图片</button>
+                        <button class="action-btn" onclick="copyImage()">📋 复制图片</button>
+                        <button class="action-btn" onclick="resetApp()">🔄 重新开始</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Powered by Gemini 2.5 Flash Image API</p>
+        </footer>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
