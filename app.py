@@ -38,11 +38,23 @@ def find_free_port():
     return port
 
 def open_browser(url, delay=1.5):
-    """延迟打开浏览器"""
+    """延迟打开浏览器 - 跨平台兼容"""
     def _open():
         time.sleep(delay)
         try:
-            webbrowser.open(url)
+            import platform
+            system = platform.system()
+            
+            if system == "Darwin":  # macOS
+                os.system(f'open "{url}"')
+            elif system == "Windows":
+                os.system(f'start "" "{url}"')
+            elif system == "Linux":
+                os.system(f'xdg-open "{url}"')
+            else:
+                # 备用方案
+                webbrowser.open(url)
+                
         except Exception as e:
             print(f"无法自动打开浏览器: {e}")
             print(f"请手动访问: {url}")
