@@ -7,14 +7,46 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🍌 Nano Banana</h1>
-            <p>基于 Gemini 2.5 Flash Image 的双图合成工具</p>
-            <small class="paste-hint">💡 支持单图/双图模式 • 可用 Ctrl+V 粘贴图片</small>
-        </header>
+    <div class="app-wrapper">
+        <!-- 历史记录侧边栏 -->
+        <aside class="history-sidebar" id="historySidebar">
+            <div class="sidebar-header">
+                <h3>📜 生成历史</h3>
+                <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">✕</button>
+            </div>
+            
+            <div class="history-controls">
+                <button class="control-btn" onclick="clearAllHistory()" id="clearHistoryBtn">
+                    🗑️ 清空历史
+                </button>
+                <span class="history-count" id="historyCount">0 条记录</span>
+            </div>
+            
+            <div class="history-list" id="historyList">
+                <div class="empty-history">
+                    <p>🎨 还没有生成记录</p>
+                    <small>开始创作吧！</small>
+                </div>
+            </div>
+        </aside>
 
-        <main>
+        <!-- 主容器 -->
+        <div class="main-container">
+            <header>
+                <div class="header-content">
+                    <button class="sidebar-toggle mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">📜</button>
+                    <div class="title-section">
+                        <h1>🍌 Nano Banana</h1>
+                        <p>基于 Gemini 2.5 Flash Image 的双图合成工具</p>
+                        <small class="paste-hint">💡 支持单图/双图模式 • 可用 Ctrl+V 粘贴图片</small>
+                    </div>
+                    <button class="sidebar-toggle desktop-toggle" id="desktopToggle" onclick="toggleSidebar()">
+                        📜 历史记录
+                    </button>
+                </div>
+            </header>
+
+            <main>
             <!-- 图片上传区域 -->
             <section class="upload-section">
                 <div class="upload-container">
@@ -104,11 +136,12 @@
                     </div>
                 </div>
             </section>
-        </main>
+            </main>
 
-        <footer>
-            <p>Powered by Gemini 2.5 Flash Image API</p>
-        </footer>
+            <footer>
+                <p>Powered by Gemini 2.5 Flash Image API</p>
+            </footer>
+        </div>
     </div>
 
     <script src="utils.js"></script>

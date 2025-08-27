@@ -224,32 +224,50 @@ async function generateImageWithGemini({
         // 更新进度：提取图片数据
         if (onProgress) onProgress(80, '提取生成的图片...');
         
-        // 从响应中提取图片数据
+        // 从响应中提取图片数据 - 支持流式和混合内容
         if (!result.candidates || result.candidates.length === 0) {
             throw new Error('API未返回任何结果');
         }
         
-        const candidate = result.candidates[0];
-        if (!candidate.content || !candidate.content.parts) {
-            throw new Error('API响应格式异常');
-        }
-        
-        // 查找图片数据
+        // 遍历所有候选结果查找图片数据
         let imageData = null;
-        for (const part of candidate.content.parts) {
-            if (part.inlineData && part.inlineData.data) {
-                imageData = part.inlineData.data;
+        let allTextContent = [];
+        
+        for (const candidate of result.candidates) {
+            if (!candidate.content || !candidate.content.parts) {
+                continue;
+            }
+            
+            for (const part of candidate.content.parts) {
+                // 收集所有文字内容
+                if (part.text) {
+                    allTextContent.push(part.text);
+                }
+                // 查找图片数据（优先获取第一个找到的图片）
+                if (!imageData && part.inlineData && part.inlineData.data) {
+                    imageData = part.inlineData.data;
+                    console.log('找到图片数据，MIME类型:', part.inlineData.mimeType);
+                }
+            }
+            
+            // 如果已经找到图片，可以继续收集文字但不需要再找图片
+            if (imageData) {
                 break;
             }
         }
         
         if (!imageData) {
-            // 如果没有图片数据，检查是否有文字回复
-            const textParts = candidate.content.parts.filter(part => part.text);
-            if (textParts.length > 0) {
-                throw new Error(`API返回文字回复而非图片: ${textParts[0].text.substring(0, 100)}...`);
+            // 提供详细的错误信息，包含API的实际回复
+            if (allTextContent.length > 0) {
+                const fullText = allTextContent.join(' ').trim();
+                throw new Error(`API返回了文字内容而非图片。这可能是因为:\n1. 提示词需要明确要求生成图片\n2. 输入图片无法处理\n3. API临时无法生成图片\n\nAPI回复: "${fullText.substring(0, 200)}${fullText.length > 200 ? '...' : ''}"`);
             }
-            throw new Error('API未生成图片数据');
+            throw new Error('API未生成图片数据，请检查提示词和输入图片');
+        }
+        
+        // 记录混合内容用于调试
+        if (allTextContent.length > 0) {
+            console.log('API返回的文字内容:', allTextContent.join('\n'));
         }
         
         // 更新进度：完成
