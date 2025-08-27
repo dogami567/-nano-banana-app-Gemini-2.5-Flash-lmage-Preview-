@@ -338,9 +338,9 @@ async function generateImage() {
             model: AppState.selectedModel,
             prompt: prompt,
             leftImageBase64: AppState.leftImage,
-            leftImageMimeType: getFileMimeType(AppState.leftImageFile),
+            leftImageMimeType: AppState.leftImageFile ? getFileMimeType(AppState.leftImageFile) : null,
             rightImageBase64: AppState.rightImage,
-            rightImageMimeType: getFileMimeType(AppState.rightImageFile),
+            rightImageMimeType: AppState.rightImageFile ? getFileMimeType(AppState.rightImageFile) : null,
             onProgress: updateProgress
         });
         
