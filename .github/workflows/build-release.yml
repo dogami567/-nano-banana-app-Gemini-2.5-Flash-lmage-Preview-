@@ -1,0 +1,81 @@
+name: Build Multi-Platform Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            artifact_name: Nano-Banana-Windows.exe
+            build_command: |
+              python -m venv nano_env
+              nano_env\Scripts\activate
+              pip install Flask==2.3.3 pyinstaller
+              pyinstaller --onefile --console --add-data "index.html;." --add-data "script.js;." --add-data "api.js;." --add-data "utils.js;." --add-data "styles.css;." --add-data "CLAUDE.md;." --name "Nano-Banana-Windows" app.py
+          
+          - os: macos-latest
+            artifact_name: Nano-Banana-macOS.app
+            build_command: |
+              python3 -m venv nano_env
+              source nano_env/bin/activate
+              pip install Flask==2.3.3 pyinstaller
+              pyinstaller --onefile --windowed --add-data "index.html:." --add-data "script.js:." --add-data "api.js:." --add-data "utils.js:." --add-data "styles.css:." --add-data "CLAUDE.md:." --name "Nano-Banana-macOS" app.py
+          
+          - os: ubuntu-latest
+            artifact_name: Nano-Banana-Linux
+            build_command: |
+              python3 -m venv nano_env
+              source nano_env/bin/activate
+              pip install Flask==2.3.3 pyinstaller
+              pyinstaller --onefile --console --add-data "index.html:." --add-data "script.js:." --add-data "api.js:." --add-data "utils.js:." --add-data "styles.css:." --add-data "CLAUDE.md:." --name "Nano-Banana-Linux" app.py
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Build application
+      shell: bash
+      run: ${{ matrix.build_command }}
+      
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: |
+          dist/${{ matrix.artifact_name }}
+          dist/${{ matrix.artifact_name }}/**
+          
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          **/Nano-Banana-Windows.exe
+          **/Nano-Banana-macOS.app
+          **/Nano-Banana-Linux
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
