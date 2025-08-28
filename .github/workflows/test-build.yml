@@ -63,16 +63,11 @@ jobs:
           exit 1
         fi
         
-    - name: Create macOS zip
-      run: |
-        cd dist
-        zip -r Nano-Banana-Test-macOS.zip Nano-Banana-Test.app
-        
     - name: Upload test build
       uses: actions/upload-artifact@v4
       with:
         name: test-build-macos
-        path: dist/Nano-Banana-Test-macOS.zip
+        path: dist/Nano-Banana-Test.app
         retention-days: 5
 
   test-windows-build:
