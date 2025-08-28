@@ -27,14 +27,20 @@
 - **快捷操作**: 右键复制、一键保存
 - **清爽界面**: 现代化UI设计
 
-## 📦 安装使用
+## 📦 跨平台下载
 
-### 方式一: 直接下载 (推荐)
-1. 下载最新版本的 `Nano-Banana.exe`
+### 🖥️ Windows 用户 (推荐)
+1. 在 [Releases页面](https://github.com/dogami567/-nano-banana-app-Gemini-2.5-Flash-lmage-Preview-/releases) 下载最新版本的 `Nano-Banana-v1.2.0.exe`
 2. 双击运行，自动打开浏览器界面
 3. 输入你的 Gemini API Key 开始使用
 
-### 方式二: 从源码运行
+### 🍎 macOS 用户 (推荐)
+1. 在 [Releases页面](https://github.com/dogami567/-nano-banana-app-Gemini-2.5-Flash-lmage-Preview-/releases) 下载最新版本的 `Nano-Banana-macOS.dmg`
+2. 双击打开DMG文件，拖拽应用到"应用程序"文件夹
+3. 首次运行可能需要在"系统偏好设置 > 安全性与隐私"中允许运行
+4. 启动应用，输入你的 Gemini API Key 开始使用
+
+### 🐧 Linux 用户 & 从源码运行
 ```bash
 # 克隆仓库
 git clone https://github.com/dogami567/-nano-banana-app-Gemini-2.5-Flash-lmage-Preview-.git
@@ -56,18 +62,23 @@ python app.py
 
 **注意**: API Key存储在你的浏览器本地，不会上传到任何服务器。
 
-## 🖥️ 支持平台
+## 🖥️ 跨平台支持
 
-### Windows
-- ✅ 直接下载 `.exe` 文件运行
-- ✅ 支持 Windows 10/11
+### ✅ Windows (原生支持)
+- 📦 **一键安装**: 下载 `.exe` 文件即可运行
+- 🖥️ **兼容性**: 支持 Windows 10/11
+- 📦 **大小**: ~13MB，轻量级
 
-### macOS
-- 📝 需要从源码构建 (详见 [MACOS_BUILD.md](MACOS_BUILD.md))
-- 🖥️ 支持虚拟机构建 (详见 [VM_SETUP_GUIDE.md](VM_SETUP_GUIDE.md))
+### ✅ macOS (原生支持)  
+- 🍎 **专业安装**: 提供 `.dmg` 安装包
+- 📱 **原生体验**: 完整的macOS应用体验
+- 🔒 **系统集成**: 支持拖拽安装到应用程序文件夹
+- 🖥️ **兼容性**: 支持 macOS 10.13+ (High Sierra及以上)
 
-### Linux
-- 🐍 从源码运行 (支持所有发行版)
+### 🐧 Linux (源码运行)
+- 🐍 **Python支持**: 支持所有主流发行版
+- 📦 **依赖简单**: 仅需Python 3.11+和Flask
+- 🔧 **自定义**: 可根据需要调整和定制
 
 ## 🔒 安全说明
 
@@ -162,11 +173,18 @@ A: 应用本身可以离线运行，但需要网络连接调用Gemini API。
 
 ## 🌟 更新日志
 
-### v1.2.0 (最新)
+### v1.3.2-macos (最新)
+- 🍎 **macOS原生支持**: 发布专业DMG安装包
+- 🚀 **GitHub Actions自动构建**: macOS版本自动化构建和发布
+- 📦 **跨平台体验**: Windows + macOS双平台原生支持
+- 🔧 **构建优化**: 使用PyInstaller专用配置，应用体积优化
+
+### v1.2.0
 - ✨ 添加历史记录侧边栏
 - 🔧 修复剪贴板粘贴bug
 - 🛡️ 完善安全机制
 - 📱 优化移动端体验
+- 📦 Windows版本体积优化至13MB
 
 ### v1.1.0
 - ✨ 单图处理模式
