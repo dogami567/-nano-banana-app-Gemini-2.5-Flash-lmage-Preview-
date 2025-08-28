@@ -180,6 +180,6 @@ A: 应用本身可以离线运行，但需要网络连接调用Gemini API。
 
 ---
 
-**Made with ❤️ by developers, powered by Gemini 2.5 Flash Image Preview**
+**基于 Gemini 2.5 Flash Image Preview API 开发**
 
 如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！
