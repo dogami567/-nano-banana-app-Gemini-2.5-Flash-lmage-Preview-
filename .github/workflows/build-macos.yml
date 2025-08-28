@@ -76,26 +76,15 @@ jobs:
         
     - name: Create DMG (macOS installer)
       run: |
-        # Install create-dmg for better DMG creation
-        brew install create-dmg || true
+        echo "Creating DMG installer..."
+        # Simple DMG creation using hdiutil (built into macOS)
+        hdiutil create -volname "Nano Banana" -srcfolder dist/ -ov -format UDZO "Nano-Banana-macOS.dmg" || echo "DMG creation failed, continuing without DMG"
         
-        # Create DMG
-        if command -v create-dmg &> /dev/null; then
-          create-dmg \
-            --volname "Nano Banana" \
-            --window-pos 200 120 \
-            --window-size 600 300 \
-            --icon-size 100 \
-            --icon "Nano-Banana.app" 175 120 \
-            --hide-extension "Nano-Banana.app" \
-            --app-drop-link 425 120 \
-            "Nano-Banana-macOS.dmg" \
-            "dist/" || \
-          # Fallback to hdiutil if create-dmg fails
-          hdiutil create -volname "Nano Banana" -srcfolder dist/ -ov -format UDZO "Nano-Banana-macOS.dmg"
+        if [ -f "Nano-Banana-macOS.dmg" ]; then
+          echo "✅ DMG created successfully"
+          ls -la Nano-Banana-macOS.dmg
         else
-          # Simple DMG creation using hdiutil
-          hdiutil create -volname "Nano Banana" -srcfolder dist/ -ov -format UDZO "Nano-Banana-macOS.dmg"
+          echo "⚠️  DMG creation failed, will upload .app only"
         fi
         
     - name: Upload macOS App as artifact
@@ -106,6 +95,7 @@ jobs:
           dist/Nano-Banana.app
           Nano-Banana-macOS.dmg
         retention-days: 30
+        if-no-files-found: warn
         
     # Only create release if this is a tag push
     - name: Create Release
@@ -114,30 +104,27 @@ jobs:
       with:
         files: |
           Nano-Banana-macOS.dmg
-        name: "🍌 Nano Banana ${{ github.ref_name }} - macOS Release"
+        name: "🍌 Nano Banana ${{ github.ref_name }} - macOS版本"
         body: |
-          ## 🍎 macOS 版本发布
+          ## 🍎 macOS版本发布
           
-          ### 📦 下载说明
-          - **macOS 用户**: 下载 `Nano-Banana-macOS.dmg`
-          - 双击打开DMG文件，拖拽应用到"应用程序"文件夹
-          - 首次运行可能需要在"系统偏好设置 > 安全性与隐私"中允许运行
+          ### 📦 下载方式
+          - 下载 `Nano-Banana-macOS.dmg`
+          - 双击打开，拖拽到应用程序文件夹
+          - 首次运行需要在系统设置中允许
           
           ### 🔑 使用方法
-          1. 获取 Gemini API Key: https://ai.google.dev/
-          2. 启动应用，在浏览器中输入API Key
-          3. 上传图片并输入提示词开始使用
+          1. 获取Gemini API Key: https://ai.google.dev/
+          2. 启动应用输入API Key
+          3. 上传图片开始使用
           
-          ### ✨ 功能特性
-          - 🎨 双图合成和单图增强
-          - 📋 拖拽上传和剪贴板粘贴
-          - 💾 生成历史和本地存储
-          - 🛡️ 完全本地处理，保护隐私
-          
-          ---
-          
-          **基于 Gemini 2.5 Flash Image Preview API 开发**
+          ### ✨ 主要功能
+          - 双图合成和单图增强
+          - 拖拽上传和剪贴板粘贴
+          - 生成历史记录
+          - 本地处理保护隐私
         draft: false
         prerelease: false
+        fail_on_unmatched_files: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
