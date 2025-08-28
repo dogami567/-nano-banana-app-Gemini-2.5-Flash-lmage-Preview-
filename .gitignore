@@ -57,3 +57,26 @@ dist/
 # Temporary files
 tmp/
 temp/
+
+# Test files and sensitive data
+qa/
+test_*.py
+*_test.py
+tests/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+
+# Virtual environment
+nano_env/
+
+# Executables
+*.exe
+*.app
+
+# API keys and sensitive files
+*api_key*
+*secret*
+*.key
