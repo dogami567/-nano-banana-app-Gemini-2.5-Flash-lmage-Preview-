@@ -49,8 +49,10 @@ pids
 *.seed
 *.pid.lock
 
-# PyInstaller
+# PyInstaller  
 *.spec
+# But include our custom spec files
+!macos-*.spec
 build/
 dist/
 
