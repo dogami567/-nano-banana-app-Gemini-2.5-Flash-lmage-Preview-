@@ -1,0 +1,133 @@
+name: Build macOS App
+
+on:
+  push:
+    tags:
+      - 'v*'  # 当推送标签时触发
+    branches:
+      - master  # 当推送到master分支时触发
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements_macos.txt
+        
+    - name: Build macOS App
+      run: |
+        pyinstaller \
+          --onefile \
+          --windowed \
+          --name "Nano-Banana" \
+          --add-data "index.html:." \
+          --add-data "script.js:." \
+          --add-data "api.js:." \
+          --add-data "utils.js:." \
+          --add-data "styles.css:." \
+          --osx-bundle-identifier "com.nanobanan.app" \
+          app.py
+          
+    - name: Verify build
+      run: |
+        ls -la dist/
+        if [ -d "dist/Nano-Banana.app" ]; then
+          echo "✅ macOS app built successfully"
+          echo "App size: $(du -sh dist/Nano-Banana.app | cut -f1)"
+        else
+          echo "❌ Build failed - no .app found"
+          exit 1
+        fi
+        
+    - name: Test app launch (basic check)
+      run: |
+        # Test if the app can be executed (basic validation)
+        if [ -x "dist/Nano-Banana.app/Contents/MacOS/Nano-Banana" ]; then
+          echo "✅ App executable is valid"
+        else
+          echo "❌ App executable not found or not executable"
+          exit 1
+        fi
+        
+    - name: Create DMG (macOS installer)
+      run: |
+        # Install create-dmg for better DMG creation
+        brew install create-dmg || true
+        
+        # Create DMG
+        if command -v create-dmg &> /dev/null; then
+          create-dmg \
+            --volname "Nano Banana" \
+            --window-pos 200 120 \
+            --window-size 600 300 \
+            --icon-size 100 \
+            --icon "Nano-Banana.app" 175 120 \
+            --hide-extension "Nano-Banana.app" \
+            --app-drop-link 425 120 \
+            "Nano-Banana-macOS.dmg" \
+            "dist/" || \
+          # Fallback to hdiutil if create-dmg fails
+          hdiutil create -volname "Nano Banana" -srcfolder dist/ -ov -format UDZO "Nano-Banana-macOS.dmg"
+        else
+          # Simple DMG creation using hdiutil
+          hdiutil create -volname "Nano Banana" -srcfolder dist/ -ov -format UDZO "Nano-Banana-macOS.dmg"
+        fi
+        
+    - name: Upload macOS App as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: nano-banana-macos
+        path: |
+          dist/Nano-Banana.app
+          Nano-Banana-macOS.dmg
+        retention-days: 30
+        
+    # Only create release if this is a tag push
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          Nano-Banana-macOS.dmg
+        name: "🍌 Nano Banana ${{ github.ref_name }} - macOS Release"
+        body: |
+          ## 🍎 macOS 版本发布
+          
+          ### 📦 下载说明
+          - **macOS 用户**: 下载 `Nano-Banana-macOS.dmg`
+          - 双击打开DMG文件，拖拽应用到"应用程序"文件夹
+          - 首次运行可能需要在"系统偏好设置 > 安全性与隐私"中允许运行
+          
+          ### 🔑 使用方法
+          1. 获取 Gemini API Key: https://ai.google.dev/
+          2. 启动应用，在浏览器中输入API Key
+          3. 上传图片并输入提示词开始使用
+          
+          ### ✨ 功能特性
+          - 🎨 双图合成和单图增强
+          - 📋 拖拽上传和剪贴板粘贴
+          - 💾 生成历史和本地存储
+          - 🛡️ 完全本地处理，保护隐私
+          
+          ---
+          
+          **基于 Gemini 2.5 Flash Image Preview API 开发**
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
