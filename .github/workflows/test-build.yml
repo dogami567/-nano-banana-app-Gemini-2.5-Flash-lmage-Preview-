@@ -37,7 +37,26 @@ jobs:
         python -c "import app; print('✅ app.py imports successfully')"
         
         echo "Starting build..."
-        pyinstaller macos-test.spec
+        echo "Current directory: $(pwd)"
+        echo "Looking for spec file..."
+        ls -la *.spec || echo "No .spec files found"
+        
+        if [ -f "macos-test.spec" ]; then
+          echo "✅ Found macos-test.spec, using it"
+          pyinstaller macos-test.spec
+        else
+          echo "⚠️  macos-test.spec not found, falling back to command line"
+          pyinstaller \
+            --onedir \
+            --windowed \
+            --name "Nano-Banana-Test" \
+            --add-data "index.html:." \
+            --add-data "script.js:." \
+            --add-data "api.js:." \
+            --add-data "utils.js:." \
+            --add-data "styles.css:." \
+            app.py
+        fi
           
     - name: Verify test build
       run: |

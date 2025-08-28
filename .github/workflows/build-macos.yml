@@ -31,7 +31,27 @@ jobs:
         
     - name: Build macOS App
       run: |
-        pyinstaller macos-release.spec
+        echo "Current directory: $(pwd)"
+        echo "Available spec files:"
+        ls -la *.spec || echo "No .spec files found"
+        
+        if [ -f "macos-release.spec" ]; then
+          echo "✅ Using macos-release.spec"
+          pyinstaller macos-release.spec
+        else
+          echo "⚠️  macos-release.spec not found, using fallback"
+          pyinstaller \
+            --onedir \
+            --windowed \
+            --name "Nano-Banana" \
+            --add-data "index.html:." \
+            --add-data "script.js:." \
+            --add-data "api.js:." \
+            --add-data "utils.js:." \
+            --add-data "styles.css:." \
+            --osx-bundle-identifier "com.nanobanan.app" \
+            app.py
+        fi
           
     - name: Verify build
       run: |
