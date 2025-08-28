@@ -37,16 +37,7 @@ jobs:
         python -c "import app; print('✅ app.py imports successfully')"
         
         echo "Starting build..."
-        pyinstaller \
-          --onefile \
-          --windowed \
-          --name "Nano-Banana-Test" \
-          --add-data "index.html:." \
-          --add-data "script.js:." \
-          --add-data "api.js:." \
-          --add-data "utils.js:." \
-          --add-data "styles.css:." \
-          app.py
+        pyinstaller macos-test.spec
           
     - name: Verify test build
       run: |
@@ -56,8 +47,21 @@ jobs:
         if [ -d "dist/Nano-Banana-Test.app" ]; then
           echo "✅ Test build successful!"
           echo "App size: $(du -sh dist/Nano-Banana-Test.app | cut -f1)"
+          echo ""
           echo "App structure:"
-          find dist/Nano-Banana-Test.app -type f | head -10
+          find dist/Nano-Banana-Test.app -type f | head -20
+          echo ""
+          echo "Checking for web files in Resources:"
+          ls -la dist/Nano-Banana-Test.app/Contents/Resources/ || echo "Resources directory not found"
+          echo ""
+          echo "Verifying critical files:"
+          for file in index.html script.js api.js utils.js styles.css; do
+            if [ -f "dist/Nano-Banana-Test.app/Contents/Resources/$file" ]; then
+              echo "✅ $file found"
+            else
+              echo "❌ $file missing"
+            fi
+          done
         else
           echo "❌ Test build failed"
           exit 1

@@ -31,17 +31,7 @@ jobs:
         
     - name: Build macOS App
       run: |
-        pyinstaller \
-          --onefile \
-          --windowed \
-          --name "Nano-Banana" \
-          --add-data "index.html:." \
-          --add-data "script.js:." \
-          --add-data "api.js:." \
-          --add-data "utils.js:." \
-          --add-data "styles.css:." \
-          --osx-bundle-identifier "com.nanobanan.app" \
-          app.py
+        pyinstaller macos-release.spec
           
     - name: Verify build
       run: |
